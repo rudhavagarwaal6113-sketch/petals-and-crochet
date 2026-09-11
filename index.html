@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Petals & Crochet — handmade crochet gifts across Chandigarh.">
+  <title>Petals & Crochet | Handmade with Love</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="announcement">🎁 Free gift on orders ₹599+ · Handmade across Chandigarh</div>
+  <header class="site-header">
+    <a class="brand" href="#home"><span>✿</span><div><strong>Petals & Crochet</strong><small>handmade with love</small></div></a>
+    <nav>
+      <a href="#shop">Shop</a><a href="#custom">Custom</a><a href="#about">About</a>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-btn" id="accountBtn" aria-label="Account">♡</button>
+      <button class="icon-btn" id="cartBtn" aria-label="Cart">🛍 <b id="cartCount">0</b></button>
+    </div>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">HANDMADE • THOUGHTFUL • UNIQUE</span>
+        <h1>Little things,<br><em>made with love.</em></h1>
+        <p>Soft crochet flowers, plushies and keepsakes made by hand and delivered across Chandigarh.</p>
+        <div class="hero-buttons"><a class="btn primary" href="#shop">Shop handmade</a><a class="btn ghost" href="#custom">Make it personal →</a></div>
+        <div class="trust-row"><span>✓ Handmade</span><span>✓ Gift ready</span><span>✓ Chandigarh delivery</span></div>
+      </div>
+      <div class="hero-art"><div class="blob"></div><div class="hero-card"><div class="flower">🌷</div><span>made by hand</span></div></div>
+    </section>
+
+    <section class="offer"><div><span>FOR EVERY ORDER ₹599+</span><h2>A little gift from us to you 🎀</h2></div><strong>FREE<br>GIFT</strong></section>
+
+    <section id="shop" class="section"><div class="section-head"><div><span class="eyebrow">THE COLLECTION</span><h2>Made to make someone smile.</h2></div><div class="filters"><button class="filter active" data-category="all">All</button><button class="filter" data-category="bouquets">Bouquets</button><button class="filter" data-category="plushies">Plushies</button><button class="filter" data-category="accessories">Accessories</button></div></div><div id="productGrid" class="product-grid"><div class="loading">Loading handmade pieces…</div></div></section>
+
+    <section id="custom" class="custom section"><div class="custom-copy"><span class="eyebrow">MADE JUST FOR YOU</span><h2>Have something special in mind?</h2><p>Tell us what you want — colours, names, flowers, plushies or a completely new idea. We'll make it by hand.</p><a class="btn dark" href="https://wa.me/919999999999" target="_blank" rel="noopener">Chat for a custom order</a></div><div class="custom-art">🧶<span>your idea<br>→ handmade</span></div></section>
+
+    <section id="about" class="section about"><div><span class="eyebrow">OUR LITTLE STUDIO</span><h2>Not factory-made.<br>Not ordinary.</h2></div><p>Petals & Crochet is a small handmade shop built around thoughtful gifting. Every piece is crocheted with patience, packed carefully and made to feel personal.</p></section>
+  </main>
+
+  <footer><div class="brand"><span>✿</span><div><strong>Petals & Crochet</strong><small>handmade with love</small></div></div><p>Handmade crochet across Chandigarh.</p><p>© <span id="year"></span> Petals & Crochet</p></footer>
+
+  <aside id="cartPanel" class="side-panel"><div class="panel-head"><h2>Your cart</h2><button class="close" data-close="cartPanel">×</button></div><div id="cartItems" class="panel-body"></div><div class="cart-footer"><div class="summary"><span>Subtotal</span><strong id="cartSubtotal">₹0</strong></div><p id="giftNote"></p><button id="checkoutBtn" class="btn primary full">Checkout</button></div></aside>
+  <aside id="accountPanel" class="side-panel"><div class="panel-head"><h2>Account</h2><button class="close" data-close="accountPanel">×</button></div><div class="panel-body account-body" id="accountBody"></div></aside>
+  <div id="overlay" class="overlay"></div>
+
+  <div id="authModal" class="modal hidden"><div class="modal-card small"><button class="close" data-close="authModal">×</button><span class="eyebrow">WELCOME</span><h2 id="authTitle">Sign in</h2><form id="authForm"><input id="authName" placeholder="Your name" autocomplete="name" class="signup-only"><input id="authEmail" type="email" placeholder="Email address" required autocomplete="email"><input id="authPassword" type="password" placeholder="Password" required minlength="6" autocomplete="current-password"><button class="btn primary full" type="submit">Continue</button></form><p id="authSwitch" class="switch">New here? <button type="button">Create an account</button></p><p id="authMessage" class="form-message"></p></div></div>
+
+  <div id="productModal" class="modal hidden"><div class="modal-card product-detail"><button class="close" data-close="productModal">×</button><div id="productDetail"></div></div></div>
+  <div id="checkoutModal" class="modal hidden"><div class="modal-card checkout"><button class="close" data-close="checkoutModal">×</button><span class="eyebrow">CHECKOUT</span><h2>Complete your order</h2><div id="checkoutSummary"></div><form id="checkoutForm"><input id="shipName" placeholder="Full name" required><input id="shipPhone" placeholder="Phone number" inputmode="tel" required><textarea id="shipAddress" placeholder="Full delivery address in Chandigarh" required></textarea><select id="paymentMethod"><option value="cod">Cash on Delivery</option><option value="razorpay">Online payment (Razorpay)</option></select><button class="btn primary full" type="submit">Place order</button></form><p id="checkoutMessage" class="form-message"></p></div></div>
+
+  <div id="adminModal" class="modal hidden"><div class="modal-card admin-card"><button class="close" data-close="adminModal">×</button><span class="eyebrow">PRIVATE STUDIO</span><h2>Admin dashboard</h2><div class="admin-tabs"><button class="active" data-admin-tab="products">Products</button><button data-admin-tab="orders">Orders</button></div><div id="adminContent"></div></div></div>
+  <div id="toast" class="toast"></div>
+  <script src="script.js"></script>
+</body>
+</html>
