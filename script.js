@@ -1,5 +1,5 @@
 const SUPABASE_URL = 'https://dyvuowxvhbjdiflvxrls.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_1pD5veoyvfR1uSOWRuPjew_j-r3rmzp';
+const SUPABASE_KEY = 'sb_publishable_xbFMoEXz3WS9jMd5WXAG5Q_xY44C6KD';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const $ = s => document.querySelector(s);
@@ -14,16 +14,8 @@ function saveCart(){localStorage.setItem('petals_cart',JSON.stringify(cart));ren
 function img(p){return p.image_url||((Array.isArray(p.images)&&p.images[0])||'')}
 function safe(s=''){return String(s).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]))}
 
-async function loadProducts(){
-  const {data,error}=await db.from('products').select('*').eq('active',true).order('featured',{ascending:false}).order('created_at',{ascending:false});
-  if(error){console.error(error);if($('#productGrid'))$('#productGrid').innerHTML='<div class="empty">Could not load products. Please refresh.</div>';return}
-  products=data||[]; renderProducts();
-}
-function renderProducts(){
-  if(!$('#productGrid'))return;
-  const list=category==='all'?products:products.filter(p=>(p.category||'').toLowerCase()===category);
-  $('#productGrid').innerHTML=list.length?list.map((p,i)=>{const im=img(p);return `<article class="product-card"><div class="product-image">${im?`<img src="${safe(im)}" alt="${safe(p.name)}">`:`<div class="placeholder">${placeholders[i%placeholders.length]}</div>`}<button class="heart" onclick="addWish(${p.id})">♡</button></div><div class="product-info"><small>${safe(p.category||'handmade')}</small><h3>${safe(p.name)}</h3><div class="price">${money(p.price)} ${p.compare_at_price?`<span class="old">${money(p.compare_at_price)}</span>`:''}</div><div class="stock">${p.stock>0?`${p.stock} available`:'Out of stock'}</div><div class="product-actions"><button onclick="openProduct(${p.id})">View</button><button class="add" onclick="addToCart(${p.id})" ${p.stock<1?'disabled':''}>Add to bag</button></div></div></article>`}).join(''):'<div class="empty">Nothing here yet — try another collection.</div>';
-}
+async function loadProducts(){const {data,error}=await db.from('products').select('*').eq('active',true).order('featured',{ascending:false}).order('created_at',{ascending:false});if(error){console.error(error);if($('#productGrid'))$('#productGrid').innerHTML='<div class="empty">Could not load products. Please refresh.</div>';return}products=data||[];renderProducts()}
+function renderProducts(){if(!$('#productGrid'))return;const list=category==='all'?products:products.filter(p=>(p.category||'').toLowerCase()===category);$('#productGrid').innerHTML=list.length?list.map((p,i)=>{const im=img(p);return `<article class="product-card"><div class="product-image">${im?`<img src="${safe(im)}" alt="${safe(p.name)}">`:`<div class="placeholder">${placeholders[i%placeholders.length]}</div>`}<button class="heart" onclick="addWish(${p.id})">♡</button></div><div class="product-info"><small>${safe(p.category||'handmade')}</small><h3>${safe(p.name)}</h3><div class="price">${money(p.price)} ${p.compare_at_price?`<span class="old">${money(p.compare_at_price)}</span>`:''}</div><div class="stock">${p.stock>0?`${p.stock} available`:'Out of stock'}</div><div class="product-actions"><button onclick="openProduct(${p.id})">View</button><button class="add" onclick="addToCart(${p.id})" ${p.stock<1?'disabled':''}>Add to bag</button></div></div></article>`}).join(''):'<div class="empty">Nothing here yet — try another collection.</div>'}
 window.addToCart=function(id){const p=products.find(x=>x.id===id);if(!p||p.stock<1)return toast('This piece is out of stock.');const row=cart.find(x=>x.id===id);if(row){if(row.qty>=p.stock)return toast('You reached the available stock.');row.qty++}else cart.push({id,qty:1});saveCart();toast('Added to your bag ✿')}
 window.addWish=function(){toast('Wishlist saved for this browser ♡')}
 window.openProduct=function(id){const p=products.find(x=>x.id===id);if(!p)return;const im=img(p);$('#productDetail').innerHTML=`<div class="product-detail-grid"><div class="detail-image">${im?`<img src="${safe(im)}" alt="${safe(p.name)}">`:`<div class="placeholder">🌷</div>`}</div><div class="detail-copy"><small class="eyebrow">${safe(p.category||'HANDMADE')}</small><h2>${safe(p.name)}</h2><div class="price">${money(p.price)} ${p.compare_at_price?`<span class="old">${money(p.compare_at_price)}</span>`:''}</div><p>${safe(p.description||'Made carefully by hand with soft yarn and lots of love.')}</p><p class="stock">${p.stock>0?`${p.stock} available`:'Currently unavailable'}</p><button class="btn primary full" onclick="addToCart(${p.id});closeModal('productModal')" ${p.stock<1?'disabled':''}>Add to bag</button></div></div>`;$('#productModal').classList.remove('hidden')}
@@ -39,42 +31,15 @@ $('#overlay').onclick=()=>{closePanel('cartPanel');closePanel('accountPanel')};
 $('#cartBtn').onclick=()=>{renderCart();openPanel('cartPanel')};
 $('#accountBtn').onclick=()=>{renderAccount();openPanel('accountPanel')};
 
-async function refreshSession(){
-  const {data,error}=await db.auth.getSession();
-  if(error){console.error(error);return}
-  user=data.session?.user||null;
-  if(user)await loadProfile();
-  renderAccount();
-}
-async function loadProfile(){
-  if(!user)return;
-  const {data,error}=await db.from('profiles').select('*').eq('id',user.id).maybeSingle();
-  if(error){console.error(error);profile=null;return}
-  profile=data||null;
-}
-function renderAccount(){
-  const body=$('#accountBody');if(!body)return;
-  if(!user){body.innerHTML='<div class="account-card"><div class="avatar">✿</div><h3>Welcome to the studio</h3><p>Sign in to save your details and see your orders.</p><button class="btn primary full" id="openLogin">Sign in / Create account</button></div>';$('#openLogin')?.addEventListener('click',()=>{closePanel('accountPanel');openAuth('login')});return}
-  body.innerHTML=`<div class="account-card"><div class="avatar">${safe((profile?.name||user.email||'P')[0].toUpperCase())}</div><h3>${safe(profile?.name||'Lovely customer')}</h3><p>${safe(profile?.username?`@${profile.username}`:user.email||'')}</p>${profile?.is_admin?'<button class="btn dark full" id="adminOpen">Open admin dashboard</button>':''}<button class="btn ghost full" id="logoutBtn">Sign out</button></div><h3 style="text-align:left;margin-top:25px">Your orders</h3><div id="miniOrders">Loading…</div>`;
-  $('#logoutBtn').onclick=async()=>{const {error}=await db.auth.signOut();if(error)return toast(error.message);user=null;profile=null;renderAccount();toast('Signed out')};
-  $('#adminOpen')?.addEventListener('click',()=>{closePanel('accountPanel');openAdmin()});loadMyOrders()
-}
+async function refreshSession(){const {data,error}=await db.auth.getSession();if(error){console.error(error);return}user=data.session?.user||null;if(user)await loadProfile();renderAccount()}
+async function loadProfile(){if(!user)return;const {data,error}=await db.from('profiles').select('*').eq('id',user.id).maybeSingle();if(error){console.error(error);profile=null;return}profile=data||null}
+function renderAccount(){const body=$('#accountBody');if(!body)return;if(!user){body.innerHTML='<div class="account-card"><div class="avatar">✿</div><h3>Welcome to the studio</h3><p>Sign in to save your details and see your orders.</p><button class="btn primary full" id="openLogin">Sign in / Create account</button></div>';$('#openLogin')?.addEventListener('click',()=>{closePanel('accountPanel');openAuth('login')});return}body.innerHTML=`<div class="account-card"><div class="avatar">${safe((profile?.name||user.email||'P')[0].toUpperCase())}</div><h3>${safe(profile?.name||'Lovely customer')}</h3><p>${safe(profile?.username?`@${profile.username}`:user.email||'')}</p>${profile?.is_admin?'<button class="btn dark full" id="adminOpen">Open admin dashboard</button>':''}<button class="btn ghost full" id="logoutBtn">Sign out</button></div><h3 style="text-align:left;margin-top:25px">Your orders</h3><div id="miniOrders">Loading…</div>`;$('#logoutBtn').onclick=async()=>{const {error}=await db.auth.signOut();if(error)return toast(error.message);user=null;profile=null;renderAccount();toast('Signed out')};$('#adminOpen')?.addEventListener('click',()=>{closePanel('accountPanel');openAdmin()});loadMyOrders()}
 async function loadMyOrders(){const el=$('#miniOrders');if(!el||!user)return;const {data,error}=await db.from('orders').select('id,status,amount,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(8);if(error){el.innerHTML='<p>Orders unavailable right now.</p>';return}el.innerHTML=data?.length?data.map(o=>`<div class="order-mini"><strong>#${o.id.slice(0,8).toUpperCase()}</strong><br>${money(o.amount)} · ${safe(o.status)}</div>`).join(''):'<p>No orders yet.</p>'}
 function openAuth(mode){authMode=mode;$('#authModal').classList.remove('hidden');$('#authTitle').textContent=mode==='login'?'Sign in':'Create your account';$('#authMessage').textContent='';$('#authForm').classList.toggle('signup',mode==='signup');$('#authForm').parentElement.classList.toggle('signup',mode==='signup');$('#authSwitch').innerHTML=mode==='login'?'New here? <button type="button">Create an account</button>':'Already have an account? <button type="button">Sign in</button>';$('#authSwitch button').onclick=()=>openAuth(mode==='login'?'signup':'login')}
-$('#authForm').onsubmit=async e=>{
-  e.preventDefault();
-  const email=$('#authEmail').value.trim(),password=$('#authPassword').value,name=$('#authName').value.trim();
-  $('#authMessage').textContent='Working…';
-  let result;
-  if(authMode==='signup') result=await db.auth.signUp({email,password,options:{data:{name}}});
-  else result=await db.auth.signInWithPassword({email,password});
-  if(result.error){$('#authMessage').textContent=result.error.message;return}
-  if(authMode==='signup'&&!result.data.session){$('#authMessage').textContent='Account created. Check your email to confirm it, then sign in.';return}
-  user=result.data.user;await loadProfile();closeModal('authModal');renderAccount();toast('Welcome to Petals & Crochet ✿')
-}
+$('#authForm').onsubmit=async e=>{e.preventDefault();const email=$('#authEmail').value.trim(),password=$('#authPassword').value,name=$('#authName').value.trim();$('#authMessage').textContent='Working…';let result;if(authMode==='signup')result=await db.auth.signUp({email,password,options:{data:{name},emailRedirectTo:window.location.origin}});else result=await db.auth.signInWithPassword({email,password});if(result.error){$('#authMessage').textContent=result.error.message;return}if(authMode==='signup'&&!result.data.session){$('#authMessage').textContent='Account created. Check your email to confirm it, then return here to sign in.';return}user=result.data.user;await loadProfile();closeModal('authModal');renderAccount();toast('Welcome to Petals & Crochet ✿')}
 
 $('#checkoutBtn').onclick=async()=>{if(!user){closePanel('cartPanel');openAuth('login');toast('Please sign in before checkout.');return}$('#checkoutSummary').innerHTML=`<div class="summary"><span>Order total</span><strong>${$('#cartSubtotal').textContent}</strong></div><p id="giftCheckout"></p>`;$('#checkoutModal').classList.remove('hidden')};
-$('#checkoutForm').onsubmit=async e=>{e.preventDefault();const rows=cartRows();if(!rows.length)return;const name=$('#shipName').value.trim(),phone=$('#shipPhone').value.trim(),address=$('#shipAddress').value.trim(),method=$('#paymentMethod').value;const subtotal=rows.reduce((a,x)=>a+x.p.price*x.qty,0);const discount=subtotal>=1000?50:0,total=Math.max(0,subtotal+49-discount);$('#checkoutMessage').textContent='Creating order…';const {data:order,error}=await db.from('orders').insert([{user_id:user.id,status:'pending',payment_provider:method==='cod'?'cod':'razorpay',amount:total,currency:'INR',shipping_name:name,shipping_phone:phone,shipping_address:address}]).select().single();if(error){$('#checkoutMessage').textContent=error.message;return}const {error:itemError}=await db.from('order_items').insert(rows.map(x=>({order_id:order.id,product_id:x.p.id,product_name:x.p.name,unit_price:x.p.price,quantity:x.qty})));if(itemError){await db.from('orders').delete().eq('id',order.id);$('#checkoutMessage').textContent=itemError.message;return}if(method==='razorpay'){const fn=await db.functions.invoke('create-razorpay-order',{body:{order_id:order.id}});if(fn.error||!fn.data?.order){$('#checkoutMessage').textContent='Online payment is not configured yet. Choose Cash on Delivery for the live demo, or add Razorpay keys in Supabase secrets.';return}if(!window.Razorpay){const s=document.createElement('script');s.src='https://checkout.razorpay.com/v1/checkout.js';document.head.appendChild(s);await new Promise(r=>r.onload=r)}const rz=new Razorpay({key:fn.data.key,amount:fn.data.order.amount,currency:'INR',name:'Petals & Crochet',description:'Handmade order',order_id:fn.data.order.id,prefill:{name,contact:phone,email:user.email},handler:async resp=>{const v=await db.functions.invoke('verify-razorpay-payment',{body:{order_id:order.id,...resp}});if(v.error)toast('Payment verification failed');else{cart=[];saveCart();closeModal('checkoutModal');toast('Payment successful! Order placed ✿')}}});rz.open();return}await db.from('orders').update({status:'processing'}).eq('id',order.id);cart=[];saveCart();closeModal('checkoutModal');closePanel('cartPanel');toast(`Order ${order.id.slice(0,8).toUpperCase()} placed!`);loadProducts()}
+$('#checkoutForm').onsubmit=async e=>{e.preventDefault();const rows=cartRows();if(!rows.length)return;const name=$('#shipName').value.trim(),phone=$('#shipPhone').value.trim(),address=$('#shipAddress').value.trim(),method=$('#paymentMethod').value;const subtotal=rows.reduce((a,x)=>a+x.p.price*x.qty,0);const discount=subtotal>=1000?50:0,total=Math.max(0,subtotal+49-discount);$('#checkoutMessage').textContent='Creating order…';const {data:order,error}=await db.from('orders').insert([{user_id:user.id,status:'pending',payment_provider:method==='cod'?'cod':'razorpay',amount:total,currency:'INR',shipping_name:name,shipping_phone:phone,shipping_address:address}]).select().single();if(error){$('#checkoutMessage').textContent=error.message;return}const {error:itemError}=await db.from('order_items').insert(rows.map(x=>({order_id:order.id,product_id:x.p.id,product_name:x.p.name,unit_price:x.p.price,quantity:x.qty})));if(itemError){await db.from('orders').delete().eq('id',order.id);$('#checkoutMessage').textContent=itemError.message;return}if(method==='razorpay'){const fn=await db.functions.invoke('create-razorpay-order',{body:{order_id:order.id}});if(fn.error||!fn.data?.order){$('#checkoutMessage').textContent='Online payment is not configured yet. Choose Cash on Delivery for the live demo, or add Razorpay keys in Supabase secrets.';return}if(!window.Razorpay){const s=document.createElement('script');s.src='https://checkout.razorpay.com/v1/checkout.js';document.head.appendChild(s);await new Promise(r=>s.onload=r)}const rz=new Razorpay({key:fn.data.key,amount:fn.data.order.amount,currency:'INR',name:'Petals & Crochet',description:'Handmade order',order_id:fn.data.order.id,prefill:{name,contact:phone,email:user.email},handler:async resp=>{const v=await db.functions.invoke('verify-razorpay-payment',{body:{order_id:order.id,...resp}});if(v.error)toast('Payment verification failed');else{cart=[];saveCart();closeModal('checkoutModal');toast('Payment successful! Order placed ✿')}}});rz.open();return}await db.from('orders').update({status:'processing'}).eq('id',order.id);cart=[];saveCart();closeModal('checkoutModal');closePanel('cartPanel');toast(`Order ${order.id.slice(0,8).toUpperCase()} placed!`);loadProducts()}
 
 async function openAdmin(){if(!user||!profile?.is_admin)return toast('Admin access required.');$('#adminModal').classList.remove('hidden');renderAdminProducts()}
 $$('[data-admin-tab]').forEach(b=>b.onclick=()=>{$$('[data-admin-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');b.dataset.adminTab==='products'?renderAdminProducts():renderAdminOrders()})
@@ -84,17 +49,6 @@ window.toggleProduct=async(id,value)=>{const {error}=await db.from('products').u
 window.deleteProduct=async id=>{if(!confirm('Delete this product?'))return;const {error}=await db.from('products').delete().eq('id',id);if(error)toast(error.message);else{toast('Product deleted');await loadProducts();renderAdminProducts()}}
 async function renderAdminOrders(){const {data,error}=await db.from('orders').select('*').order('created_at',{ascending:false});if(error)return toast(error.message);$('#adminContent').innerHTML=data?.length?data.map(o=>`<div class="admin-order"><strong>#${o.id.slice(0,8).toUpperCase()}</strong><p>${money(o.amount)} · ${safe(o.status)}</p><p>${safe(o.shipping_name||'')} · ${safe(o.shipping_phone||'')}</p><p>${safe(o.shipping_address||'')}</p><select onchange="updateOrder('${o.id}',this.value)"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="processing" ${o.status==='processing'?'selected':''}>Processing</option><option value="shipped" ${o.status==='shipped'?'selected':''}>Shipped</option><option value="delivered" ${o.status==='delivered'?'selected':''}>Delivered</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option></select></div>`).join(''):'<p>No orders yet.</p>'}
 window.updateOrder=async(id,status)=>{const {error}=await db.from('orders').update({status}).eq('id',id);if(error)toast(error.message);else toast('Order updated')}
-
 $$('.filter').forEach(b=>b.onclick=()=>{$$('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');category=b.dataset.category;renderProducts()});
 $('#year').textContent=new Date().getFullYear();
-
-(async function init(){
-  renderCart();
-  await refreshSession();
-  await loadProducts();
-  db.auth.onAuthStateChange(async(_event,session)=>{
-    user=session?.user||null;
-    if(user)await loadProfile(); else profile=null;
-    renderAccount();
-  });
-})();
+(async function init(){renderCart();await refreshSession();await loadProducts();db.auth.onAuthStateChange(async(_event,session)=>{user=session?.user||null;if(user)await loadProfile();else profile=null;renderAccount()})})();
