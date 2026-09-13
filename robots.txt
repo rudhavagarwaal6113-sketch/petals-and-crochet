@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://petals-and-crochet.vercel.app/sitemap.xml
